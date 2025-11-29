@@ -1,5 +1,105 @@
 # Flashing Asus RT-AC86U for WiFiSensing
 
+## Installing ASUSWRT-Merlin
+
+First, we need to install the ASUSWRT Merlin firmware for our RT-AC86U router. You can download it [here](https://sourceforge.net/projects/asuswrt-merlin/files/RT-AC86U/Release/RT-AC86U_386.14_2.zip/download). After that you have to unzip it.
+
+We need it primarily to install Entware, later to permanently replace the `dhd.ko` file, and also to install programs such as ftp/sftp and scp, which we will need later.
+
+First, go to your router's web interface and log in (e.g., http://192.168.1.1). Under Advanced Settings, click on Administration. Then click on Firmware Upgrade. 
+
+Under certain circumstances, you can also make a backup beforehand. You should see something like “Manual Update” and “Upload” behind it. Click on it and then select the firmware file. After you confirm, a firmware update takes about 5 minutes and the router should then restart normally.
+
+## Install Entware and any other necessary software
+
+We now need a USB stick. Entware requires an external EXT2/3/4 partition.
+
+The AC86U cannot install Entware on the internal memory (/jffs). This is how Merlin designed it → you need a USB stick.
+
+No USB stick → no Entware → no tcpdump → no CSI logging.
+
+### Prepare USB stick (EXT4)
+
+You will need: Any USB stick (2–16 GB is sufficient)
+
+Best to format on a PC → EXT4
+
+Linux:
+
+```
+sudo mkfs.ext4 /dev/sdX
+```
+
+Windows:
+
+Windows cannot format ext4 → Use a tool such as miniTool Partition Wizard, Paragon Linux File System Driver or USB on Linux Liveboot.
+
+### Plug the USB stick into the router.
+
+The AC86U automatically mounts the stick under:
+
+```
+/tmp/mnt/<NAME>
+```
+
+Check:
+
+```
+df -h
+ls /tmp/mnt
+```
+
+You should see something like this:
+
+```
+/tmp/mnt/sda1
+```
+
+This is your ext4 stick!
+
+### Entware installation
+
+```
+cd /jffs
+chmod +x entware-setup.sh
+./entware-setup.sh
+```
+
+When asked:
+
+```
+Do you wish to install the 64-bit version?
+```
+
+```
+→ y
+```
+
+The following should then appear:
+
+```
+Info: /tmp/mnt/sda1 will be used for Entware
+Installing...
+```
+
+If this completes → Success.
+
+### Test whether Entware is running and install software
+
+```
+opkg update
+opkg install tcpdump
+```
+
+Now you can install:
+
+* tcpdump
+* nc / ncat
+* bash
+* python3 (installable)
+
+Everything you need to read CSI.
+
 ## How to patch RT-AC86U with Nexmon CSI
 
 ### Setting up your work environment
